@@ -11,22 +11,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class CadTool extends ItemBase {
-	public CadTool(String name, CreativeTabs tab, int maxStack) {
-		super(name, tab, maxStack);
+	public CadTool(CreativeTabs tab, int maxStack) {
+		super("cadtool", "Cad Tool", tab, maxStack);
 	}
 
-	/**
-	 * Called when a Block is right-clicked with this Item
-	 *
-	 * @param player
-	 * @param worldIn
-	 * @param pos
-	 * @param hand
-	 * @param facing
-	 * @param hitX
-	 * @param hitY
-	 * @param hitZ
-	 */
 	@Override
 	@MethodsReturnNonnullByDefault
 	public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {

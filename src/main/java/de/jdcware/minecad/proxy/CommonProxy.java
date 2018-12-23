@@ -1,5 +1,6 @@
 package de.jdcware.minecad.proxy;
 
+import de.jdcware.minecad.ModItems;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -10,7 +11,7 @@ import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 public class CommonProxy {
 
 	public void preInit(FMLPreInitializationEvent event) {
-
+		ModItems.register();
 	}
 
 	public void init(FMLInitializationEvent event) {

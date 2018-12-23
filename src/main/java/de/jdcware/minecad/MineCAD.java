@@ -21,9 +21,11 @@ public class MineCAD {
 	public static final String CLIENT_PROXY = "de.jdcware.minecad.proxy.ClientProxy";
 	public static final String COMMON_PROXY = "de.jdcware.minecad.proxy.CommonProxy";
 	public static final Logger LOGGER = LogManager.getLogger(MineCAD.MODID);
-	public static CustomModelBakery mb;
+	public static CustomModelBakery modelBakery;
+
 	@Mod.Instance
 	public static MineCAD instance;
+
 	@SidedProxy(clientSide = MineCAD.CLIENT_PROXY, serverSide = MineCAD.COMMON_PROXY)
 	public static CommonProxy proxy;
 
