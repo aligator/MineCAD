@@ -1,6 +1,8 @@
 package de.jdcware.minecad.scad;
 
 import de.jdcware.minecad.MineCAD;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelBlock;
@@ -8,6 +10,9 @@ import net.minecraft.client.renderer.block.model.ModelBlockDefinition;
 import net.minecraft.client.renderer.block.model.ModelManager;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
+import net.minecraft.client.renderer.block.model.Variant;
+import net.minecraft.client.renderer.block.model.multipart.Multipart;
+import net.minecraft.client.renderer.block.model.multipart.Selector;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
@@ -46,38 +51,36 @@ public class ResourceParser {
 		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 		InputStream in = classloader.getResourceAsStream("assets/" + location.getResourceDomain() + "/blockstates/" + location.getResourcePath() + ".json");
 
-		// if stream is null, the blockstates-asset didn't exist
+		// if stream is null, the blockstates-asset doesn't exist
 		if (in != null) {
 			ModelBlockDefinition def = ModelBlockDefinition.parseFromReader(new InputStreamReader(in, StandardCharsets.UTF_8), location);
 
 
 			// Todo: check Multipart??
 			if (def.hasMultipartData()) {
-			/*	if (MineCAD.mb == null) {
-					MineCAD.LOGGER.info("mb is null");
+				Multipart currentMultiparts = def.getMultipartData();
 
-				} else {
-					MineCAD.LOGGER.info(MineCAD.mb.toString());
-					MineCAD.LOGGER.info(MineCAD.mb.getMultipartVariantMap().toString());
-					MineCAD.LOGGER.info(MineCAD.mb.getMultipartVariantMap().size());
+				BlockStateContainer.Builder blockStateBuilder = new BlockStateContainer.Builder(blockState.getBlock());
 
-					List<BakedQuad> list = Lists.<BakedQuad>newArrayList();
+				for (IProperty prop : blockState.getProperties().keySet()) {
+					blockStateBuilder.add(prop);
 				}
-					//Map<Predicate<IBlockState>, IBakedModel> variantMap = MineCAD.mb.getMultipartVariantMap();
-/**
-					for (Selector selector : selectors) {
+				currentMultiparts.setStateContainer(blockStateBuilder.build());
 
 
-						for (Map.Entry<Predicate<IBlockState>, IBakedModel> entry : MineCAD.mb.getMultipartVariantMap().entrySet())
-						{
-							if (((Predicate)entry.getKey()).apply(state))
-							{
-								list.addAll((entry.getValue()).getQuads(state, side, rand++));
-							}
-						}
+				Variant lastFoundVariant = null;
+				for (Selector selector : currentMultiparts.getSelectors()) {
+					if (selector.getPredicate(currentMultiparts.getStateContainer()).apply(blockState)) {
+						lastFoundVariant = selector.getVariantList().getVariantList().get(0);
 					}
 				}
-*/
+
+				if (lastFoundVariant != null) {
+					ModelRotation rotation = (ModelRotation) lastFoundVariant.getState();
+					return new BlockData(getModelRotationX(rotation) * 90, getModelRotationY(rotation) * 90, parseBlockData(lastFoundVariant.getModelLocation()).getElements());
+				} else {
+					return new BlockData(0, 0, parseBlockData(new ResourceLocation("minecraft", "cube")).getElements());
+				}
 			}
 
 
