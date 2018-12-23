@@ -1,0 +1,15 @@
+[
+  {
+    "modid": "minecad",
+    "name": "MineCAD",
+    "description": "Exports built structures to .stl for 3d printing",
+    "version": "1.12.2-0.0.0.1",
+    "mcversion": "1.12.2",
+    "url": "j-code.de",
+    "updateJSON": "j-code.de/versions.json",
+    "authorList": [
+      "aligator123456"
+    ],
+    "credits": "Forge, openSCAD, javaSCAD"
+  }
+]
