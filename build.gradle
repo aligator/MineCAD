@@ -7,12 +7,16 @@ buildscript {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+
 apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
-
 version = "1.12.2-0.0.0.1"
-group = "de.jdcware.assets.minecad" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "de.jdcware.minecad" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "MineCAD"
 
 repositories {
@@ -39,7 +43,6 @@ minecraft {
 
 dependencies {
     compile group: 'eu.printingin3d.javascad', name: 'javascad', version: '0.9.0.12'
-    //compile 'com.google.code.gson:gson:2.8.5'
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"
@@ -63,6 +66,22 @@ dependencies {
 
 }
 
+shadowJar {
+    // Only shadow fluent-hc
+    dependencies {
+        include(dependency('eu.printingin3d.javascad:javascad:.*'))
+    }
+
+    // Relocate fluent-hc to prevent conflicts with other mods that include it
+    relocate 'eu.printingin3d.javascad', 'de.jdcware.minecad.repack.eu.printingin3d.javascad'
+
+    classifier '' // Replace the default JAR
+}
+
+reobf {
+    shadowJar {} // Reobfuscate the shadowed JAR
+}
+
 processResources {
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
@@ -80,4 +99,23 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xlint:unchecked', '-Xlint:deprecation'])
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    from javadoc.destinationDir
+    classifier = 'javadoc'
+}
+
+artifacts {
+    archives javadocJar
+    archives shadowJar
 }

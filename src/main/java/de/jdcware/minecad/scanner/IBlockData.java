@@ -1,4 +1,4 @@
-package de.jdcware.minecad.scad;
+package de.jdcware.minecad.scanner;
 
 import net.minecraft.client.renderer.block.model.BlockPart;
 

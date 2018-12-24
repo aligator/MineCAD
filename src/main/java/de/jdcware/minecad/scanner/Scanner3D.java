@@ -1,4 +1,4 @@
-package de.jdcware.minecad.scad;
+package de.jdcware.minecad.scanner;
 
 import de.jdcware.minecad.MineCAD;
 import eu.printingin3d.javascad.coords.Angles3d;
@@ -20,7 +20,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.util.vector.Vector3f;
 
 import java.io.File;
@@ -28,19 +27,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@SideOnly(net.minecraftforge.fml.relauncher.Side.CLIENT)
 public class Scanner3D {
 
 	private BlockPos p1;
 	private BlockPos p2;
 	private int minSize;
 	private float blockOverhang;
+	private IBlockDataLoader blockDataLoader;
 
 	public Scanner3D(BlockPos p1, BlockPos p2, float blockOverhang, int minSize) {
 		this.p1 = p1;
 		this.p2 = p2;
 		this.minSize = minSize;
 		this.blockOverhang = blockOverhang;
+		this.blockDataLoader = new ResourceParser();
 	}
 
 	public void scan(World world) {
@@ -62,7 +62,6 @@ public class Scanner3D {
 			for (int j = 0; j < yLength; j++) {
 				for (int k = 0; k < zLength; k++) {
 					current = p1.add(i, j, k);
-					MineCAD.LOGGER.info(current.toString());
 
 					IBlockState blockState = world.getBlockState(current);
 
@@ -76,24 +75,20 @@ public class Scanner3D {
 						EnumFacing facing = EnumFacing.EAST;
 						BlockStairs.EnumHalf half = BlockStairs.EnumHalf.BOTTOM;
 
-						BlockData mcBlockModelData = null;
+						List<IBlockData> mcBlockModelData = null;
 
 						try {
-							mcBlockModelData = ResourceParser.parse(blockState);
+							mcBlockModelData = blockDataLoader.loadBlockData(blockState);
 						} catch (Exception ex) {
 							ex.printStackTrace();
 						}
 
 						if (mcBlockModelData != null) {
-							MineCAD.LOGGER.info("block " + currentBlock.getRegistryName() + " loaded.");
-
 							models.add(cube(mcBlockModelData, facing, half).move(new Coords3d(i * 16, k * 16, j * 16)));
 
 						} else {
 							MineCAD.LOGGER.info("block " + currentBlock.getRegistryName() + " has no 3d-data in resources.");
 						}
-					} else {
-						MineCAD.LOGGER.info("block " + currentBlock.getRegistryName() + " is ignored.");
 					}
 				}
 			}
@@ -112,75 +107,84 @@ public class Scanner3D {
 	}
 
 
-	private Abstract3dModel cube(BlockData modelBlock, EnumFacing facing, BlockStairs.EnumHalf half) {
+	private Abstract3dModel cube(List<IBlockData> modelBlocks, EnumFacing facing, BlockStairs.EnumHalf half) {
 		List<Abstract3dModel> models = new ArrayList<>();
+		Abstract3dModel resultingModel = null;
 
-		Angles3d rotation = new Angles3d(modelBlock.getXRotation(), 0, modelBlock.getYRotation());
-
-		for (BlockPart blockPart : modelBlock.getBlockParts()) {
-			Vector3f from = blockPart.positionFrom;
-			Vector3f to = blockPart.positionTo;
-
-			float xSize = to.x - from.x;
-			float ySize = to.y - from.y;
-			float zSize = to.z - from.z;
-
-			if (xSize < minSize)
-				xSize = minSize;
-
-			if (ySize < minSize)
-				ySize = minSize;
-
-			if (zSize < minSize)
-				zSize = minSize;
-
-			xSize += blockOverhang;
-			ySize += blockOverhang;
-			zSize += blockOverhang;
-
-			Abstract3dModel modelPartCube = new Cube(new Dims3d(xSize, zSize, ySize))
-					.align(new Side(AlignType.MIN_IN, AlignType.MIN_IN, AlignType.MIN_IN), new Coords3d(0, 0, 0))
-					.move(new Coords3d(from.x - 8, from.z - 8, from.y - 8));
-
-			if (blockPart.partRotation != null) {
-				float xRot = 0;
-				float yRot = 0;
-				float zRot = 0;
-
-				if (blockPart.partRotation.axis == EnumFacing.Axis.X)
-					xRot = -blockPart.partRotation.angle;
-
-				if (blockPart.partRotation.axis == EnumFacing.Axis.Y)
-					yRot = -blockPart.partRotation.angle;
-
-				if (blockPart.partRotation.axis == EnumFacing.Axis.Z)
-					zRot = -blockPart.partRotation.angle;
+		for (IBlockData modelBlock : modelBlocks) {
 
 
-				modelPartCube = modelPartCube.move(new Coords3d(
-						-16 * blockPart.partRotation.origin.getX() + 8,
-						-16 * blockPart.partRotation.origin.getZ() + 8,
-						-16 * blockPart.partRotation.origin.getY() + 8));
+			Angles3d rotation = new Angles3d(modelBlock.getXRotation(), 0, modelBlock.getYRotation());
 
-				modelPartCube = new Rotate(modelPartCube, new Angles3d(xRot, zRot, yRot)).move(new Coords3d(
-						16 * blockPart.partRotation.origin.getX() - 8,
-						16 * blockPart.partRotation.origin.getZ() - 8,
-						16 * blockPart.partRotation.origin.getY() - 8));
+			for (BlockPart blockPart : modelBlock.getBlockParts()) {
+				Vector3f from = blockPart.positionFrom;
+				Vector3f to = blockPart.positionTo;
+
+				float xSize = to.x - from.x;
+				float ySize = to.y - from.y;
+				float zSize = to.z - from.z;
+
+				if (xSize < minSize)
+					xSize = minSize;
+
+				if (ySize < minSize)
+					ySize = minSize;
+
+				if (zSize < minSize)
+					zSize = minSize;
+
+				xSize += blockOverhang;
+				ySize += blockOverhang;
+				zSize += blockOverhang;
+
+				Abstract3dModel modelPartCube = new Cube(new Dims3d(xSize, zSize, ySize))
+						.align(new Side(AlignType.MIN_IN, AlignType.MIN_IN, AlignType.MIN_IN), new Coords3d(0, 0, 0))
+						.move(new Coords3d(from.x - 8, from.z - 8, from.y - 8));
+
+				if (blockPart.partRotation != null) {
+					float xRot = 0;
+					float yRot = 0;
+					float zRot = 0;
+
+					if (blockPart.partRotation.axis == EnumFacing.Axis.X)
+						xRot = -blockPart.partRotation.angle;
+
+					if (blockPart.partRotation.axis == EnumFacing.Axis.Y)
+						yRot = -blockPart.partRotation.angle;
+
+					if (blockPart.partRotation.axis == EnumFacing.Axis.Z)
+						zRot = -blockPart.partRotation.angle;
 
 
-                /*modelPartCube = modelPartCube.move(new Coords3d(16 * blockPart.partRotation.origin.getX(),
-                                                                 16 * blockPart.partRotation.origin.getZ(),
-                                                                 16 * blockPart.partRotation.origin.getY()));*/
-				//.rotate(new Angles3d(xRot, zRot, yRot));*/
+					modelPartCube = modelPartCube.move(new Coords3d(
+							-16 * blockPart.partRotation.origin.getX() + 8,
+							-16 * blockPart.partRotation.origin.getZ() + 8,
+							-16 * blockPart.partRotation.origin.getY() + 8));
+
+					modelPartCube = new Rotate(modelPartCube, new Angles3d(xRot, zRot, yRot)).move(new Coords3d(
+							16 * blockPart.partRotation.origin.getX() - 8,
+							16 * blockPart.partRotation.origin.getZ() - 8,
+							16 * blockPart.partRotation.origin.getY() - 8));
+
+
+					/*modelPartCube = modelPartCube.move(new Coords3d(16 * blockPart.partRotation.origin.getX(),
+																	 16 * blockPart.partRotation.origin.getZ(),
+																	 16 * blockPart.partRotation.origin.getY()));*/
+					//.rotate(new Angles3d(xRot, zRot, yRot));*/
+
+				}
+
+				models.add(modelPartCube);
+
+				if (resultingModel != null) {
+					resultingModel = new Union(resultingModel, new Union(models).rotate(rotation));
+				} else {
+					resultingModel = new Union(models).rotate(rotation);
+				}
 
 			}
 
-			models.add(modelPartCube);
-
-			//
-			//.move(translation));
 		}
-
-		return new Union(models).rotate(rotation);
+		return resultingModel;
 	}
 }

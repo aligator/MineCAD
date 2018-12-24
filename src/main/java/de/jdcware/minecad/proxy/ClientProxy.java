@@ -1,7 +1,7 @@
 package de.jdcware.minecad.proxy;
 
 import de.jdcware.minecad.MineCAD;
-import de.jdcware.minecad.scad.CustomModelBakery;
+import de.jdcware.minecad.scanner.CustomModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.model.ModelLoader;

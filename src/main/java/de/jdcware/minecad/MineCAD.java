@@ -1,7 +1,7 @@
 package de.jdcware.minecad;
 
 import de.jdcware.minecad.proxy.CommonProxy;
-import de.jdcware.minecad.scad.CustomModelBakery;
+import de.jdcware.minecad.scanner.CustomModelBakery;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;

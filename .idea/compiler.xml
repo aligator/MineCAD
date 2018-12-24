@@ -2,12 +2,9 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
-      <module name="com.yourname.modid.MineCAD.api" target="1.8" />
-      <module name="com.yourname.modid.MineCAD.main" target="1.8" />
-      <module name="com.yourname.modid.MineCAD.test" target="1.8" />
-      <module name="de.jcode.assets.minecad.MineCAD.api" target="1.8" />
-      <module name="de.jcode.assets.minecad.MineCAD.main" target="1.8" />
-      <module name="de.jcode.assets.minecad.MineCAD.test" target="1.8" />
+      <module name="de.jdcware.assets.minecad.MineCAD.api" target="1.8" />
+      <module name="de.jdcware.assets.minecad.MineCAD.main" target="1.8" />
+      <module name="de.jdcware.assets.minecad.MineCAD.test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
