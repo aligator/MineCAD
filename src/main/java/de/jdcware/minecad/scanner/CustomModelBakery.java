@@ -139,6 +139,10 @@ public class CustomModelBakery {
 		return rsourceLocationMap.get(location);
 	}
 
+	public String getVariantsString(IBlockState state) {
+		return blockModelShapes.getBlockStateMapper().getVariants(state.getBlock()).get(state).getVariant();
+	}
+
 	protected void loadBlocks() {
 		BlockStateMapper blockstatemapper = this.blockModelShapes.getBlockStateMapper();
 

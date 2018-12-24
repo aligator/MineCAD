@@ -10,12 +10,10 @@ import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelBlock;
 import net.minecraft.client.renderer.block.model.ModelBlockDefinition;
 import net.minecraft.client.renderer.block.model.ModelManager;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.block.model.Variant;
 import net.minecraft.client.renderer.block.model.multipart.Multipart;
 import net.minecraft.client.renderer.block.model.multipart.Selector;
-import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
@@ -31,15 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ResourceParser implements IBlockDataLoader {
-	/**
-	 * A {@link StateMapperBase} used to create property strings.
-	 */
-	private final static StateMapperBase propertyStringMapper = new StateMapperBase() {
-		@Override
-		protected ModelResourceLocation getModelResourceLocation(final IBlockState state) {
-			return new ModelResourceLocation("minecraft:air");
-		}
-	};
 
 	/**
 	 * recursively parse the block data until a model is found
@@ -92,11 +81,12 @@ public class ResourceParser implements IBlockDataLoader {
 
 		CustomModelBakery modelBakery = MineCAD.modelBakery;
 
+
 		//debugBlockModel(blockState);
 
 		ResourceLocation location = modelBakery.getResourceLocation(blockState.getBlock().getRegistryName());
 
-		String variant = propertyStringMapper.getPropertyString(blockState.getProperties());
+		String variant = modelBakery.getVariantsString(blockState);
 
 
 		// get resource blockstate stream
@@ -127,9 +117,6 @@ public class ResourceParser implements IBlockDataLoader {
 					}
 				}
 			} else {
-				variant = getVariant(def, variant);
-
-
 				if (variant == null && def.hasVariant("normal")) {
 					variant = "normal";
 				}
@@ -156,34 +143,6 @@ public class ResourceParser implements IBlockDataLoader {
 		}
 
 		return resultingBlocks;
-	}
-
-	/**
-	 * tries variant, if it doesn't work, it removes the last property and tries it again. And so on...
-	 * Needed, because for example doors don't have "powered" property in the variants (WHY???)
-	 *
-	 * @param definition model block definition in which the variant should be searched
-	 * @param variant    tested variant
-	 * @return the working variant or null if none was found
-	 */
-	private String getVariant(ModelBlockDefinition definition, String variant) {
-		while (variant.length() > 0) {
-			if (definition.hasVariant(variant)) {
-				return variant;
-			}
-
-			String variants[] = variant.split(",");
-			StringBuilder variantBuilder = new StringBuilder();
-			for (int i = 0; i < variants.length - 1; i++) {
-				if (variantBuilder.length() > 0) {
-					variantBuilder.append(',');
-				}
-				variantBuilder.append(variants[i]);
-			}
-			variant = variantBuilder.toString();
-		}
-
-		return null;
 	}
 
 	private int getModelRotationX(ModelRotation state) {
