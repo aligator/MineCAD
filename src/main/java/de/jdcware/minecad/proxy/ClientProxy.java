@@ -26,8 +26,8 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public void postInit(FMLPostInitializationEvent event) {
 		super.postInit(event);
-		MineCAD.scadModelBakery = ScadModelBakery.getInstance(0.1f, 1);
-		MineCAD.scadModelBakery.setup3dModelRegistry();
+		ScadModelBakery bakery = ScadModelBakery.getInstance(0.1f, 1);
+		MineCAD.modelRegistry = bakery.setup3dModelRegistry();
 	}
 
 	@Override

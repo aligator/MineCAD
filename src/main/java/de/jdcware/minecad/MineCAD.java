@@ -1,7 +1,9 @@
 package de.jdcware.minecad;
 
 import de.jdcware.minecad.proxy.CommonProxy;
-import de.jdcware.minecad.scanner.scad.ScadModelBakery;
+import de.jdcware.minecad.scanner.IBlockData;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.util.registry.IRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -21,7 +23,7 @@ public class MineCAD {
 	public static final String CLIENT_PROXY = "de.jdcware.minecad.proxy.ClientProxy";
 	public static final String COMMON_PROXY = "de.jdcware.minecad.proxy.CommonProxy";
 	public static final Logger LOGGER = LogManager.getLogger(MineCAD.MODID);
-	public static ScadModelBakery scadModelBakery;
+	public static IRegistry<ModelResourceLocation, IBlockData> modelRegistry;
 
 	@Mod.Instance
 	public static MineCAD instance;

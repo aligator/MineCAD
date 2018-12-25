@@ -39,10 +39,7 @@ public class CadTool extends ItemBase {
 				Scanner3D scanner = new Scanner3D(minMax.getFirst(), minMax.getFirst().add(
 						minMax.getSecond().getX() - minMax.getFirst().getX() + 1,
 						minMax.getSecond().getY() - minMax.getFirst().getY() + 1,
-						minMax.getSecond().getZ() - minMax.getFirst().getZ() + 1), 0.2f, 1);
-
-				//pos.getDistance()
-
+						minMax.getSecond().getZ() - minMax.getFirst().getZ() + 1));
 				scanner.scan(worldIn);
 
 			}

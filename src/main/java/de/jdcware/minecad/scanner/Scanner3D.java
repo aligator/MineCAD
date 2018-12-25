@@ -8,6 +8,11 @@ import eu.printingin3d.javascad.tranzitions.Union;
 import eu.printingin3d.javascad.utils.SaveScadFiles;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockModelShapes;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.BlockStateMapper;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
@@ -21,16 +26,10 @@ public class Scanner3D {
 
 	private BlockPos p1;
 	private BlockPos p2;
-	private int minSize;
-	private float blockOverhang;
-	private IBlockDataLoader blockDataLoader;
 
-	public Scanner3D(BlockPos p1, BlockPos p2, float blockOverhang, int minSize) {
+	public Scanner3D(BlockPos p1, BlockPos p2) {
 		this.p1 = p1;
 		this.p2 = p2;
-		this.minSize = minSize;
-		this.blockOverhang = blockOverhang;
-		this.blockDataLoader = new ResourceParser();
 	}
 
 	public void scan(World world) {
@@ -63,17 +62,22 @@ public class Scanner3D {
 						IBlockData mcBlockModelData = null;
 
 						try {
-							mcBlockModelData = blockDataLoader.loadBlockData(blockState);
+							BlockModelShapes modelShapes = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes();
+							BlockStateMapper blockstatemapper = modelShapes.getBlockStateMapper();
+
+							// TODO: find a wa to know which resource location should be used. (example: sapplings)
+							//       it now uses just the first one
+							for (final ResourceLocation resourcelocation : blockstatemapper.getBlockstateLocations(blockState.getBlock())) {
+								mcBlockModelData = MineCAD.modelRegistry.getObject(new ModelResourceLocation(resourcelocation, modelShapes.getBlockStateMapper().getVariants(blockState.getBlock()).get(blockState).getVariant()));
+								break;
+							}
 						} catch (Exception ex) {
 							ex.printStackTrace();
 						}
 
 						if (mcBlockModelData != null) {
-
 							Abstract3dModel model = (Abstract3dModel) mcBlockModelData.getBlockParts(blockState);
 							models.add(model.move(new Coords3d(i * 16, k * 16, j * 16)));
-							//models.add(cube(mcBlockModelData, facing, half).move(new Coords3d(i * 16, k * 16, j * 16)));
-
 						} else {
 							MineCAD.LOGGER.info("block " + currentBlock.getRegistryName() + " has no 3d-data in resources.");
 						}
