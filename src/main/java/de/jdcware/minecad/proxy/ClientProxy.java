@@ -1,7 +1,7 @@
 package de.jdcware.minecad.proxy;
 
 import de.jdcware.minecad.MineCAD;
-import de.jdcware.minecad.scanner.CustomModelBakery;
+import de.jdcware.minecad.scanner.scad.ScadModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.model.ModelLoader;
@@ -26,7 +26,8 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public void postInit(FMLPostInitializationEvent event) {
 		super.postInit(event);
-		MineCAD.modelBakery = CustomModelBakery.getInstance();
+		MineCAD.scadModelBakery = ScadModelBakery.getInstance(0.1f, 1);
+		MineCAD.scadModelBakery.setup3dModelRegistry();
 	}
 
 	@Override

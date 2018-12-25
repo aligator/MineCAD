@@ -1,7 +1,7 @@
 package de.jdcware.minecad;
 
 import de.jdcware.minecad.proxy.CommonProxy;
-import de.jdcware.minecad.scanner.CustomModelBakery;
+import de.jdcware.minecad.scanner.scad.ScadModelBakery;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -21,7 +21,7 @@ public class MineCAD {
 	public static final String CLIENT_PROXY = "de.jdcware.minecad.proxy.ClientProxy";
 	public static final String COMMON_PROXY = "de.jdcware.minecad.proxy.CommonProxy";
 	public static final Logger LOGGER = LogManager.getLogger(MineCAD.MODID);
-	public static CustomModelBakery modelBakery;
+	public static ScadModelBakery scadModelBakery;
 
 	@Mod.Instance
 	public static MineCAD instance;

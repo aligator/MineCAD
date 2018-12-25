@@ -1,14 +1,8 @@
 package de.jdcware.minecad.scanner;
 
-import net.minecraft.client.renderer.block.model.BlockPart;
+import net.minecraft.block.state.IBlockState;
 
-import java.util.List;
+public interface IBlockData<T> {
 
-public interface IBlockData {
-
-	int getXRotation();
-
-	int getYRotation();
-
-	List<BlockPart> getBlockParts();
+	T getBlockParts(IBlockState state);
 }
