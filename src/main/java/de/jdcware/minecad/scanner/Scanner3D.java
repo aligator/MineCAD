@@ -26,10 +26,12 @@ public class Scanner3D {
 
 	private BlockPos p1;
 	private BlockPos p2;
+	private List<ResourceLocation> ignoreBlocks = new ArrayList<>();
 
 	public Scanner3D(BlockPos p1, BlockPos p2) {
 		this.p1 = p1;
 		this.p2 = p2;
+		this.ignoreBlocks.add(new ResourceLocation("minecraft", "glass"));
 	}
 
 	public void scan(World world) {
@@ -58,21 +60,21 @@ public class Scanner3D {
 
 					Block currentBlock = blockState.getBlock();
 
-					if (!currentBlock.isAir(blockState, world, current)) {
+					if (!currentBlock.isAir(blockState, world, current) && !ignoreBlocks.contains(blockState.getBlock().getRegistryName())) {
 						IBlockData mcBlockModelData = null;
 
-						try {
-							BlockModelShapes modelShapes = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes();
-							BlockStateMapper blockstatemapper = modelShapes.getBlockStateMapper();
+						BlockModelShapes modelShapes = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes();
+						BlockStateMapper blockstatemapper = modelShapes.getBlockStateMapper();
 
-							// TODO: find a wa to know which resource location should be used. (example: sapplings)
-							//       it now uses just the first one
-							for (final ResourceLocation resourcelocation : blockstatemapper.getBlockstateLocations(blockState.getBlock())) {
-								mcBlockModelData = MineCAD.modelRegistry.getObject(new ModelResourceLocation(resourcelocation, modelShapes.getBlockStateMapper().getVariants(blockState.getBlock()).get(blockState).getVariant()));
-								break;
-							}
-						} catch (Exception ex) {
-							ex.printStackTrace();
+						// TODO: find a way to know which resource location should be used. (example: sapplings)
+						//       it now uses just the first one
+						for (final ResourceLocation resourcelocation : blockstatemapper.getBlockstateLocations(blockState.getBlock())) {
+							mcBlockModelData = MineCAD.modelRegistry.getObject(new ModelResourceLocation(resourcelocation, modelShapes.getBlockStateMapper().getVariants(blockState.getBlock()).get(blockState).getVariant()));
+							break;
+						}
+
+						if (mcBlockModelData == null) {
+							mcBlockModelData = MineCAD.modelRegistry.getObject(new ModelResourceLocation(new ResourceLocation("minecraft", "cobblestone"), "normal"));
 						}
 
 						if (mcBlockModelData != null) {
