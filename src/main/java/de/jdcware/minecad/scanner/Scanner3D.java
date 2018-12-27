@@ -1,6 +1,7 @@
 package de.jdcware.minecad.scanner;
 
 import de.jdcware.minecad.MineCAD;
+import de.jdcware.minecad.MineCADConfig;
 import eu.printingin3d.javascad.coords.Coords3d;
 import eu.printingin3d.javascad.models.Abstract3dModel;
 import eu.printingin3d.javascad.tranzitions.Mirror;
@@ -26,12 +27,10 @@ public class Scanner3D {
 
 	private BlockPos p1;
 	private BlockPos p2;
-	private List<ResourceLocation> ignoreBlocks = new ArrayList<>();
 
 	public Scanner3D(BlockPos p1, BlockPos p2) {
 		this.p1 = p1;
 		this.p2 = p2;
-		this.ignoreBlocks.add(new ResourceLocation("minecraft", "glass"));
 	}
 
 	public void scan(World world) {
@@ -60,7 +59,7 @@ public class Scanner3D {
 
 					Block currentBlock = blockState.getBlock();
 
-					if (!currentBlock.isAir(blockState, world, current) && !ignoreBlocks.contains(blockState.getBlock().getRegistryName())) {
+					if (!currentBlock.isAir(blockState, world, current) && !MineCADConfig.isIgnoredBlock(blockState.getBlock().getRegistryName())) {
 						IBlockData mcBlockModelData = null;
 
 						BlockModelShapes modelShapes = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes();
@@ -91,8 +90,8 @@ public class Scanner3D {
 		if (models.size() != 0) {
 
 			try {
-				new SaveScadFiles(new File("/tmp"))
-						.addModel("out.scad", Mirror.mirrorY(new Union(models)))
+				new SaveScadFiles(new File(MineCADConfig.filepath))
+						.addModel(MineCADConfig.filename, Mirror.mirrorY(new Union(models)))
 						.saveScadFiles();
 			} catch (IOException e) {
 				e.printStackTrace();
