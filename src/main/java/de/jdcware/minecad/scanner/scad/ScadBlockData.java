@@ -12,8 +12,14 @@ public class ScadBlockData implements IBlockData<Abstract3dModel> {
 		this.model = model;
 	}
 
+	/**
+	 * Get the model data. the state is ignored here.
+	 *
+	 * @param state is ignored.
+	 * @return
+	 */
 	@Override
-	public Abstract3dModel getBlockParts(IBlockState state) {
+	public Abstract3dModel getBlockModelData(IBlockState state) {
 		return model;
 	}
 }

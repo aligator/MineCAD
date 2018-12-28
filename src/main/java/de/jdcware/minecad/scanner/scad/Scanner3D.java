@@ -1,7 +1,8 @@
-package de.jdcware.minecad.scanner;
+package de.jdcware.minecad.scanner.scad;
 
 import de.jdcware.minecad.MineCAD;
 import de.jdcware.minecad.MineCADConfig;
+import de.jdcware.minecad.scanner.IBlockData;
 import eu.printingin3d.javascad.coords.Coords3d;
 import eu.printingin3d.javascad.models.Abstract3dModel;
 import eu.printingin3d.javascad.tranzitions.Mirror;
@@ -23,6 +24,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The scanner scans each block between the provided positions and builds a 3D model out of it.
+ */
 public class Scanner3D {
 
 	private BlockPos p1;
@@ -46,9 +50,11 @@ public class Scanner3D {
 
 		List<Abstract3dModel> models = new ArrayList<>();
 
+		// for each block
 		for (int i = 0; i < xLength; i++) {
 			for (int j = 0; j < yLength; j++) {
 				for (int k = 0; k < zLength; k++) {
+					// current is the pointer to the currently used block
 					current = p1.add(i, j, k);
 
 					IBlockState blockState = world.getBlockState(current);
@@ -59,6 +65,7 @@ public class Scanner3D {
 
 					Block currentBlock = blockState.getBlock();
 
+					// filter ignored blocks and air
 					if (!currentBlock.isAir(blockState, world, current) && !MineCADConfig.isIgnoredBlock(blockState.getBlock().getRegistryName())) {
 						IBlockData mcBlockModelData = null;
 
@@ -72,16 +79,15 @@ public class Scanner3D {
 							break;
 						}
 
+						// if no block found use the standard minecraft-block as fall back
 						if (mcBlockModelData == null) {
 							mcBlockModelData = MineCAD.modelRegistry.getObject(new ModelResourceLocation(new ResourceLocation("minecraft", "cobblestone"), "normal"));
-						}
-
-						if (mcBlockModelData != null) {
-							Abstract3dModel model = (Abstract3dModel) mcBlockModelData.getBlockParts(blockState);
-							models.add(model.move(new Coords3d(i * 16, k * 16, j * 16)));
-						} else {
 							MineCAD.LOGGER.info("block " + currentBlock.getRegistryName() + " has no 3d-data in resources.");
 						}
+
+						Abstract3dModel model = (Abstract3dModel) mcBlockModelData.getBlockModelData(blockState);
+						// add the model and move it to the correct position
+						models.add(model.move(new Coords3d(i * 16, k * 16, j * 16)));
 					}
 				}
 			}
@@ -89,6 +95,7 @@ public class Scanner3D {
 
 		if (models.size() != 0) {
 
+			// create scad file
 			try {
 				new SaveScadFiles(new File(MineCADConfig.filepath))
 						.addModel(MineCADConfig.filename, Mirror.mirrorY(new Union(models)))

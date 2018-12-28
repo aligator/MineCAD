@@ -4,6 +4,9 @@ import de.jdcware.minecad.MineCAD;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 
+/**
+ * A simple Item class as base for items.
+ */
 public class ItemBase extends Item {
 
 	public ItemBase(String registryName, String name, CreativeTabs tab, int maxStack) {
@@ -13,8 +16,4 @@ public class ItemBase extends Item {
 		setCreativeTab(tab);
 		setMaxStackSize(maxStack);
 	}
-
-	//public void registerItemModel() {
-	//	MineCAD.proxy.registerItemRenderer(this, 0, name);
-	//}
 }

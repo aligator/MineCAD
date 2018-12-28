@@ -14,7 +14,12 @@ import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
+/**
+ * MineCAD is a mod for exporting parts of the minecraft world for 3D Printing.
+ * Currently it exports the blocks to OpenSCAD.
+ * <p>
+ * NOT COMPATIBLE WITH CTM-MC
+ */
 @Mod(modid = MineCAD.MODID, version = MineCAD.VERSION, name = MineCAD.NAME, useMetadata = true)
 public class MineCAD {
 	public static final String MODID = "minecad";

@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.block.model.Variant;
 import net.minecraft.client.renderer.block.model.VariantList;
 import net.minecraft.client.renderer.block.model.multipart.Multipart;
 import net.minecraft.client.renderer.block.model.multipart.Selector;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.registry.IRegistry;
 import net.minecraft.util.registry.RegistrySimple;
@@ -25,6 +26,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This is partly a rewrite for the ModelBakery from minecraft.
+ * It builds Scad models instead of the Baked models.
+ */
 public class ScadModelBakery {
 
 	protected final IResourceManager resourceManager;
@@ -33,10 +38,13 @@ public class ScadModelBakery {
 
 	private final float blockOverhang;
 	private final float minSize;
+	/**
+	 * the instance of the vanilla bakery. Used for loading the block data as this is the same logic.
+	 */
 	private final VanillaBakeryWrapper vanillaBakery;
 
-	public ScadModelBakery(float blockOverhang, float minSize, IResourceManager resourceManagerIn, BlockModelShapes blockModelShapesIn) {
-		this.vanillaBakery = new VanillaBakeryWrapper(resourceManagerIn, null, blockModelShapesIn);
+	public ScadModelBakery(float blockOverhang, float minSize, IResourceManager resourceManagerIn, TextureMap textureMapIn, BlockModelShapes blockModelShapesIn) {
+		this.vanillaBakery = new VanillaBakeryWrapper(resourceManagerIn, textureMapIn, blockModelShapesIn);
 
 		this.blockOverhang = blockOverhang;
 		this.minSize = minSize;
@@ -44,10 +52,20 @@ public class ScadModelBakery {
 		this.blockModelShapes = blockModelShapesIn;
 	}
 
+	/**
+	 * get a instance builded with the resource manager and block shapes from Minecraft instance.
+	 * @param blockOverhang
+	 * @param minSize
+	 * @return
+	 */
 	public static ScadModelBakery getInstance(float blockOverhang, float minSize) {
-		return new ScadModelBakery(blockOverhang, minSize, Minecraft.getMinecraft().getResourceManager(), Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes());
+		return new ScadModelBakery(blockOverhang, minSize, Minecraft.getMinecraft().getResourceManager(), Minecraft.getMinecraft().getTextureMapBlocks(), Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes());
 	}
 
+	/**
+	 * build the model registry
+	 * @return
+	 */
 	public IRegistry<ModelResourceLocation, IBlockData> setup3dModelRegistry() {
 		vanillaBakery.loadBlocks();
 		vanillaBakery.loadVariantItemModels();
@@ -76,7 +94,7 @@ public class ScadModelBakery {
 				IBlockData<Abstract3dModel> bakedSelectorData = this.createRandomModelForVariantList(selector.getVariantList(), "selector of " + s);
 
 				if (bakedSelectorData != null) {
-					selectors.put(selector.getPredicate(multipart.getStateContainer()), bakedSelectorData.getBlockParts(null));
+					selectors.put(selector.getPredicate(multipart.getStateContainer()), bakedSelectorData.getBlockModelData(null));
 				}
 			}
 
@@ -111,53 +129,7 @@ public class ScadModelBakery {
 			}
 
 			return new ScadBlockData(builder.build());
-// TODO: support different variants
-
-/*			int i = 0;
-
-			for (Variant variant : variantsIn.getVariantList())
-			{
-				ModelBlock modelblock = getModels().get(variant.getModelLocation());
-
-				if (modelblock != null && modelblock.isResolved())
-				{
-					if (modelblock.getElements().isEmpty())
-					{
-						MineCAD.LOGGER.warn("Missing elements for: {}", (Object)modelLocation);
-					}
-					else
-					{
-						IBlockData blockData = this.bakeModel(modelblock, variant.getRotation(), variant.isUvLock());
-
-						if (blockData != null)
-						{
-							++i;
-							builder.add(blockData);
-						}
-					}
-				}
-				else
-				{
-					MineCAD.LOGGER.warn("Missing model for: {}", (Object)modelLocation);
-				}
-			}
-
-			IBlockData blockData1 = null;
-
-			if (i == 0)
-			{
-				MineCAD.LOGGER.warn("No weighted models for: {}", (Object)modelLocation);
-			}
-			else if (i == 1)
-			{
-				blockData1 = weightedbakedmodel$builder.first();
-			}
-			else
-			{
-				blockData1 = weightedbakedmodel$builder.build();
-			}
-
-			return blockData1;*/
+			// TODO: support different variants. Currently only the first variant is used.
 		}
 	}
 }

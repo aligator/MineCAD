@@ -19,7 +19,7 @@ public class ScadMultiBlockData implements IBlockData<Abstract3dModel> {
 	}
 
 	@Override
-	public Abstract3dModel getBlockParts(IBlockState state) {
+	public Abstract3dModel getBlockModelData(IBlockState state) {
 		List<Abstract3dModel> list = new ArrayList<>();
 
 		if (state != null) {

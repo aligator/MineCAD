@@ -16,6 +16,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * A wraper around the original ModelBakery. It provides reflective access to some private fields.
+ */
 public class VanillaBakeryWrapper extends ModelBakery {
 
 	private final Field variantsField;
@@ -41,10 +44,10 @@ public class VanillaBakeryWrapper extends ModelBakery {
 		super.loadVariantItemModels();
 	}
 
+	/**
+	 * Provides reflective access to the loadModelsCheck() function.
+	 */
 	public void loadModelsCheck() {
-		// call private methods with reflection.
-		// It would bake the models if we would call super.setupModelRegistry()
-		// to avoid this, we call only the methods we need with reflection
 		try {
 			ObfuscationReflectionHelper.findMethod(ModelBakery.class, "func_177597_h", void.class).invoke(this, null); // loadModelsCheck
 		} catch (IllegalAccessException e) {
@@ -55,7 +58,9 @@ public class VanillaBakeryWrapper extends ModelBakery {
 		}
 	}
 
-
+	/**
+	 * Provides reflective access to the variants field.
+	 */
 	public Map<ModelResourceLocation, VariantList> getVariants() {
 		try {
 			return (Map<ModelResourceLocation, VariantList>) variantsField.get(this);
@@ -65,6 +70,9 @@ public class VanillaBakeryWrapper extends ModelBakery {
 		return null;
 	}
 
+	/**
+	 * Provides reflective access to the modelsField field.
+	 */
 	public Map<ResourceLocation, ModelBlock> getModels() {
 		try {
 			return (Map<ResourceLocation, ModelBlock>) modelsField.get(this);
@@ -74,6 +82,9 @@ public class VanillaBakeryWrapper extends ModelBakery {
 		return null;
 	}
 
+	/**
+	 * Provides reflective access to the multipartVariantMapField field.
+	 */
 	public Map<ModelBlockDefinition, Collection<ModelResourceLocation>> getMultipartVariantMap() {
 		try {
 			return (Map<ModelBlockDefinition, Collection<ModelResourceLocation>>) multipartVariantMapField.get(this);

@@ -10,7 +10,9 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-
+/**
+ * Initializes and registers all Items from MineCAD
+ */
 @Mod.EventBusSubscriber(modid = MineCAD.MODID)
 public class ModItems {
 
