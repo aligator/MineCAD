@@ -1,5 +1,6 @@
 package de.jdcware.minecad.scanner.scad;
 
+import de.jdcware.minecad.core.IBaseBlockData;
 import de.jdcware.minecad.scanner.IModelBuilder;
 import eu.printingin3d.javascad.coords.Angles3d;
 import eu.printingin3d.javascad.coords.Coords3d;
@@ -42,6 +43,15 @@ public class ScadBlockBuilder implements IModelBuilder<Abstract3dModel> {
 
 		this.quartersXField = ObfuscationReflectionHelper.findField(ModelRotation.class, "field_177543_t"); // quartersX
 		this.quartersYField = ObfuscationReflectionHelper.findField(ModelRotation.class, "field_177542_u"); // quartersY
+	}
+
+	/**
+	 * add a ModelBlock to the scad model.
+	 *
+	 * @param blockData a ModelBlock from minecraft
+	 */
+	public void add(IBaseBlockData blockData) {
+		add(blockData.getModelBlock(), blockData.getModelRotation());
 	}
 
 	/**

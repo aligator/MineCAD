@@ -26,6 +26,9 @@ repositories {
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
+    options.fork = true
+    options.forkOptions.executable = 'javac'
+    options.compilerArgs << "-XDignore.symbol.file"
 }
 
 minecraft {
@@ -39,6 +42,7 @@ minecraft {
     // simply re-run your setup task after changing the mappings to update your workspace.
     mappings = "snapshot_20171003"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+    clientJvmArgs += '-Dfml.coreMods.load=de.jdcware.minecad.core.asm.MineCADCorePlugin'
 }
 
 dependencies {
@@ -67,12 +71,10 @@ dependencies {
 }
 
 shadowJar {
-    // Only shadow fluent-hc
     dependencies {
         include(dependency('eu.printingin3d.javascad:javascad:.*'))
     }
 
-    // Relocate fluent-hc to prevent conflicts with other mods that include it
     relocate 'eu.printingin3d.javascad', 'de.jdcware.minecad.repack.eu.printingin3d.javascad'
 
     classifier '' // Replace the default JAR
@@ -118,4 +120,11 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 artifacts {
     archives javadocJar
     archives shadowJar
+}
+
+jar {
+    manifest {
+        attributes 'FMLCorePlugin': 'de.jdcware.minecad.core.asm.MineCADCorePlugin'
+        attributes 'FMLCorePluginContainsFMLMod': 'true'
+    }
 }

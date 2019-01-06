@@ -28,6 +28,7 @@ public class MineCAD {
 	public static final String CLIENT_PROXY = "de.jdcware.minecad.proxy.ClientProxy";
 	public static final String COMMON_PROXY = "de.jdcware.minecad.proxy.CommonProxy";
 	public static final Logger LOGGER = LogManager.getLogger(MineCAD.MODID);
+
 	public static IRegistry<ModelResourceLocation, IBlockData> modelRegistry;
 
 	@Mod.Instance
@@ -60,4 +61,5 @@ public class MineCAD {
 	public void serverStopping(FMLServerStoppingEvent event) {
 		proxy.serverStopping(event);
 	}
+
 }

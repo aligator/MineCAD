@@ -1,5 +1,6 @@
 package de.jdcware.minecad.scanner;
 
+import de.jdcware.minecad.core.IBaseBlockData;
 import net.minecraft.client.renderer.block.model.ModelBlock;
 import net.minecraft.client.renderer.block.model.ModelRotation;
 
@@ -10,6 +11,7 @@ import net.minecraft.client.renderer.block.model.ModelRotation;
  */
 public interface IModelBuilder<T> {
 
+	void add(IBaseBlockData blockData);
 	void add(ModelBlock modelData, ModelRotation modelRotation);
 
 	T build();

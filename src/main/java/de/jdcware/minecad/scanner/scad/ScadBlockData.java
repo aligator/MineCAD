@@ -8,7 +8,7 @@ public class ScadBlockData implements IBlockData<Abstract3dModel> {
 
 	private final Abstract3dModel model;
 
-	ScadBlockData(Abstract3dModel model) {
+	public ScadBlockData(Abstract3dModel model) {
 		this.model = model;
 	}
 
