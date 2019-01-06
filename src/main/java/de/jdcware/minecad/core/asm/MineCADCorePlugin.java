@@ -8,20 +8,27 @@ import de.jdcware.minecad.core.ModelRegistryResolver;
 import net.minecraft.client.renderer.block.model.ModelBlock;
 import net.minecraft.client.renderer.block.model.ModelBlockDefinition;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.block.model.Variant;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.RegistrySimple;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.animation.ModelBlockAnimation;
 import net.minecraftforge.common.model.IModelState;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 @IFMLLoadingPlugin.TransformerExclusions({"de.jdcware.minecad.core.asm"})
 @IFMLLoadingPlugin.MCVersion(value = "1.12.2")
@@ -41,10 +48,19 @@ public class MineCADCorePlugin implements IFMLLoadingPlugin {
 		MineCADCorePlugin.multipartModels = multipartModels;
 	}
 
-	public static void onBlockBake(Map<ModelResourceLocation, IModel> stateModels, Map<ModelResourceLocation, ModelBlockDefinition> multipartDefinitions, Map<ModelBlockDefinition, IModel> multipartModels) {
-		MineCADCorePlugin.stateModels = stateModels;
-		MineCADCorePlugin.multipartDefinitions = multipartDefinitions;
-		MineCADCorePlugin.multipartModels = multipartModels;
+	public static void onBlockBake(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+		try {
+			Optional<ModelBlock> modelBlock = (Optional<ModelBlock>) ObfuscationReflectionHelper.findMethod(IModel.class, "getModel", void.class, IModelState.class, VertexFormat.class, Function.class).invoke(model, state, format, bakedTextureGetter);
+			if (modelBlock.isPresent()) {
+				LOGGER.info(modelBlock.get().name);
+				resolver.add(model, new BaseBlockData(modelBlock.get(), ModelRotation.X0_Y0));
+			}
+
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void onVanillaBlockBake(IModel origin, IModelState state, ResourceLocation location, ModelBlock model, boolean uvlock, ModelBlockAnimation animation) {
@@ -64,6 +80,19 @@ public class MineCADCorePlugin implements IFMLLoadingPlugin {
 			resolver.addWithDependency(origin, variants);
 			return;
 		}
+	}
+
+	public static Optional<ModelBlock> callGetModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+		try {
+			return (Optional<ModelBlock>) ObfuscationReflectionHelper.findMethod(IModel.class, "getModel", void.class, IModelState.class, VertexFormat.class, Function.class)
+					.invoke(model, state, format, bakedTextureGetter);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+
+		return Optional.empty();
 	}
 
 	public static RegistrySimple<ModelResourceLocation, IBaseBlockData> getModelRegistry() {
