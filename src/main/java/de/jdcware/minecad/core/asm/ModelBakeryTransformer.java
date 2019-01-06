@@ -38,7 +38,7 @@ public class ModelBakeryTransformer implements IClassTransformer {
 
 		bytes = transformOnBlocksLoaded(name, transformedName, bytes);
 		bytes = transformOnBakeVanilla(name, transformedName, bytes);
-		bytes = ransformOnBakeWeighted(name, transformedName, bytes);
+		//bytes = ransformOnBakeWeighted(name, transformedName, bytes);
 
 		return bytes;
 	}
