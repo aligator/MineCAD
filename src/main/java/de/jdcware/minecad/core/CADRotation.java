@@ -45,6 +45,17 @@ public enum CADRotation {
         return CADRotation.valueOf(modelRotation.name());
     }
 
+    /**
+     * Get the model rotation by a model state.
+     * <p>
+     * As the it is not always easy to get the ModelRotation and there is also no simple way to get the rotation from a modelState,
+     * this function calculates how the modelState rotates something and checks if any of the rotations in this enum match the rotations.
+     * <p>
+     * This has no good performance, but it should always work.
+     *
+     * @param modelState
+     * @return
+     */
     public static CADRotation getByModelState(IModelState modelState) {
         Optional<TRSRTransformation> trOp = modelState.apply(Optional.empty());
         Quat4f leftRotation = trOp.get().getLeftRot();

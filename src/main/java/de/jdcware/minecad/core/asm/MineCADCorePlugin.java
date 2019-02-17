@@ -101,7 +101,7 @@ public class MineCADCorePlugin implements IFMLLoadingPlugin {
 				Optional<ICADModel> model = callGetModel(models.get(i), MultiModelState.getPartState(state, models.get(i), i), format, bakedTextureGetter);
 
 				if (model.isPresent()) {
-					builder.add(model.get(), (variants.get(i)).getWeight(), (variants.get(i)).getRotation());
+                    builder.add(model.get(), (variants.get(i)).getWeight());
 				}
 			}
 

@@ -3,7 +3,6 @@ package de.jdcware.minecad.core;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.util.WeightedRandom;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -63,8 +62,7 @@ public class WeightedRandomCADModel extends BaseCADModel {
         public Builder() {
         }
 
-        public Builder add(ICADModel model, int weight, ModelRotation rotation) {
-            model.setRotation(rotation);
+        public Builder add(ICADModel model, int weight) {
             this.listItems.add(new WeightedModel(model, weight));
             return this;
         }

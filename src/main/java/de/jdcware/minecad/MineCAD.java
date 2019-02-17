@@ -1,16 +1,9 @@
 package de.jdcware.minecad;
 
 import de.jdcware.minecad.proxy.CommonProxy;
-import de.jdcware.minecad.scanner.IBlockData;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.util.registry.IRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.fml.common.event.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,8 +21,6 @@ public class MineCAD {
 	public static final String CLIENT_PROXY = "de.jdcware.minecad.proxy.ClientProxy";
 	public static final String COMMON_PROXY = "de.jdcware.minecad.proxy.CommonProxy";
 	public static final Logger LOGGER = LogManager.getLogger(MineCAD.MODID);
-
-	public static IRegistry<ModelResourceLocation, IBlockData> modelRegistry;
 
 	@Mod.Instance
 	public static MineCAD instance;

@@ -1,5 +1,6 @@
 package de.jdcware.minecad.core;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BlockPartRotation;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -14,4 +15,6 @@ public interface ICADBuilder<T> {
     T union(List<T> models);
 
     T rotate(T model, CADRotation blockRotation);
+
+    T buildModel(ICADModel model, IBlockState blockState, long rand);
 }

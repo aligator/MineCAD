@@ -50,7 +50,7 @@ public class Scanner3D {
 
 		List<Abstract3dModel> models = new ArrayList<>();
 
-		ScadCADBuilder builder = new ScadCADBuilder();
+		ScadCADBuilder builder = new ScadCADBuilder(MineCADConfig.minSize, MineCADConfig.blockOverhang);
 
 		// for each block
 		for (int i = 0; i < xLength; i++) {
@@ -80,32 +80,12 @@ public class Scanner3D {
 							break;
 						}
 
+						if (cadModel != null) {
+							Abstract3dModel model = builder.buildModel(cadModel, blockState, 5);
 
-						Abstract3dModel model = builder.getDestClass().cast(cadModel.buildModel(builder, blockState, 5));
-
-
-						//ScadBlockBuilder builder = new ScadBlockBuilder(0, 0, 5);
-						//builder.add(cadModel, blockState);
-
-						//Abstract3dModel model = builder.build();
-						/*
-
-						// TODO: find a way to know which resource location should be used. (example: sapplings)
-						//       it now uses just the first one
-						for (final ResourceLocation resourcelocation : blockstatemapper.getBlockstateLocations(blockState.getBlock())) {
-							mcBlockModelData = MineCAD.modelRegistry.getObject(new ModelResourceLocation(resourcelocation, modelShapes.getBlockStateMapper().getVariants(blockState.getBlock()).get(blockState).getVariant()));
-							break;
+							// add the model and move it to the correct position
+							models.add(model.move(new Coords3d(i * 16, k * 16, j * 16)));
 						}
-
-						// if no block found use the standard minecraft-block as fall back
-						if (mcBlockModelData == null) {
-							mcBlockModelData = MineCAD.modelRegistry.getObject(new ModelResourceLocation(new ResourceLocation("minecraft", "cobblestone"), "normal"));
-							MineCAD.LOGGER.info("block " + currentBlock.getRegistryName() + " has no 3d-data in resources.");
-						}
-
-						Abstract3dModel model = (Abstract3dModel) mcBlockModelData.getBlockModelData(blockState);*/
-						// add the model and move it to the correct position
-						models.add(model.move(new Coords3d(i * 16, k * 16, j * 16)));
 					}
 				}
 			}

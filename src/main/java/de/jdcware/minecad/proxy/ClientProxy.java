@@ -17,15 +17,6 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public void postInit(FMLPostInitializationEvent event) {
 		super.postInit(event);
-
-		//ScadModelBakery bakery = ScadModelBakery.getInstance(MineCADConfig.blockOverhang, MineCADConfig.minSize);
-	/*	MineCAD.modelRegistry = new RegistrySimple<>();
-
-		for (ModelResourceLocation location : MineCADCorePlugin.getModelRegistry().getKeys()) {
-			ScadBlockBuilder builder = new ScadBlockBuilder(MineCADConfig.blockOverhang, MineCADConfig.minSize);
-			builder.add(MineCADCorePlugin.getModelRegistry().getObject(location));
-			MineCAD.modelRegistry.putObject(location, new ScadBlockData(builder.build()));
-		}*/
 	}
 
 	@Override

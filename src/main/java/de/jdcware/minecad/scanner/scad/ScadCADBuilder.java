@@ -19,8 +19,13 @@ import java.util.List;
 
 public class ScadCADBuilder extends BaseCADBuilder<Abstract3dModel> {
 
-    protected ScadCADBuilder() {
+    private final float minSize;
+    private final float blockOverhang;
+
+    protected ScadCADBuilder(float minSize, float blockOverhang) {
         super(Abstract3dModel.class);
+        this.minSize = minSize;
+        this.blockOverhang = blockOverhang;
     }
 
     @Override
@@ -30,7 +35,7 @@ public class ScadCADBuilder extends BaseCADBuilder<Abstract3dModel> {
         float ySize = to.y - from.y;
         float zSize = to.z - from.z;
 
-        /*
+
         if (xSize < minSize) {
             xSize = minSize;
         }
@@ -43,8 +48,6 @@ public class ScadCADBuilder extends BaseCADBuilder<Abstract3dModel> {
             zSize = minSize;
         }
 
-*/
-        double blockOverhang = 0.1;
         // add the block overhang to each block
         xSize += blockOverhang;
         ySize += blockOverhang;
