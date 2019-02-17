@@ -172,8 +172,11 @@ public class ModelBakeryTransformer implements IClassTransformer {
 
 			MethodGetModel.instructions.add(labelBegin);
 			MethodGetModel.instructions.add(new VarInsnNode(ALOAD, 0));
+            MethodGetModel.instructions.add(new VarInsnNode(ALOAD, 1));
+            MethodGetModel.instructions.add(new VarInsnNode(ALOAD, 2));
+            MethodGetModel.instructions.add(new VarInsnNode(ALOAD, 3));
             MethodGetModel.instructions.add(new MethodInsnNode(INVOKESTATIC, "de/jdcware/minecad/core/asm/MineCADCorePlugin", "defaultGetModel",
-                    "(Lnet/minecraftforge/client/model/IModel;" + ")Ljava/util/Optional;", false));
+                    "(Lnet/minecraftforge/client/model/IModel;Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function;)Ljava/util/Optional;", false));
 			MethodGetModel.instructions.add(new InsnNode(ARETURN));
 			MethodGetModel.instructions.add(labelEnd);
 

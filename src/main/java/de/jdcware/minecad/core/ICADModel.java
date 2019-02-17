@@ -1,14 +1,15 @@
 package de.jdcware.minecad.core;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.client.renderer.block.model.ModelRotation;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
 public interface ICADModel {
 
-    // TODO: Facing really needed???
-    List<CADQuad> getQuads(IBlockState state, EnumFacing facing, long rand);
+    Object buildModel(ICADBuilder builder, @Nullable IBlockState state, long rand);
 
-    CadRotation getRotation();
+    CADRotation getRotation();
+
+    void setRotation(ModelRotation rotation);
 }

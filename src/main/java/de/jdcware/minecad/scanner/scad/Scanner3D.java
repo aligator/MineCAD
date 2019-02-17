@@ -50,6 +50,8 @@ public class Scanner3D {
 
 		List<Abstract3dModel> models = new ArrayList<>();
 
+		ScadCADBuilder builder = new ScadCADBuilder();
+
 		// for each block
 		for (int i = 0; i < xLength; i++) {
 			for (int j = 0; j < yLength; j++) {
@@ -79,10 +81,13 @@ public class Scanner3D {
 						}
 
 
-						ScadBlockBuilder builder = new ScadBlockBuilder(0, 0, 5);
-						builder.add(cadModel, blockState);
+						Abstract3dModel model = builder.getDestClass().cast(cadModel.buildModel(builder, blockState, 5));
 
-						Abstract3dModel model = builder.build();
+
+						//ScadBlockBuilder builder = new ScadBlockBuilder(0, 0, 5);
+						//builder.add(cadModel, blockState);
+
+						//Abstract3dModel model = builder.build();
 						/*
 
 						// TODO: find a way to know which resource location should be used. (example: sapplings)

@@ -3,10 +3,7 @@ package de.jdcware.minecad.core.asm;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.jdcware.minecad.MineCAD;
-import de.jdcware.minecad.core.ICADModel;
-import de.jdcware.minecad.core.MultipartCADModel;
-import de.jdcware.minecad.core.SimpleCADModel;
-import de.jdcware.minecad.core.WeightedRandomCADModel;
+import de.jdcware.minecad.core.*;
 import net.minecraft.client.renderer.block.model.ModelBlockDefinition;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.Variant;
@@ -57,8 +54,8 @@ public class MineCADCorePlugin implements IFMLLoadingPlugin {
 	 * @param model
 	 * @return
 	 */
-	public static Optional<ICADModel> defaultGetModel(IModel model) {
-		return Optional.of(new SimpleCADModel(model));
+	public static Optional<ICADModel> defaultGetModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+		return Optional.of(new SimpleCADModel(model, CADRotation.getByModelState(state)));
 	}
 
 	/**
@@ -91,8 +88,12 @@ public class MineCADCorePlugin implements IFMLLoadingPlugin {
 		if (!Attributes.moreSpecific(format, Attributes.DEFAULT_BAKED_FORMAT)) {
 			throw new IllegalArgumentException("can't bake vanilla weighted models to the format that doesn't fit into the default one: " + format);
 		} else if (variants.size() == 1) {
-			IModel model = models.get(0);
-			return callGetModel(model, MultiModelState.getPartState(state, model, 0), format, bakedTextureGetter);
+			Optional<ICADModel> model = callGetModel(models.get(0), MultiModelState.getPartState(state, models.get(0), 0), format, bakedTextureGetter);
+			if (model.isPresent()) {
+				//model.get().setRotation(variants.get(0).getRotation());
+				return model;
+			}
+			return Optional.empty();
 		} else {
 			WeightedRandomCADModel.Builder builder = new WeightedRandomCADModel.Builder();
 
@@ -100,7 +101,7 @@ public class MineCADCorePlugin implements IFMLLoadingPlugin {
 				Optional<ICADModel> model = callGetModel(models.get(i), MultiModelState.getPartState(state, models.get(i), i), format, bakedTextureGetter);
 
 				if (model.isPresent()) {
-					builder.add(model.get(), (variants.get(i)).getWeight());
+					builder.add(model.get(), (variants.get(i)).getWeight(), (variants.get(i)).getRotation());
 				}
 			}
 
@@ -116,6 +117,7 @@ public class MineCADCorePlugin implements IFMLLoadingPlugin {
 		while (iterSelectors.hasNext()) {
 			Selector selector = (Selector) iterSelectors.next();
 			Optional<ICADModel> model = callGetModel(partModels.get(selector), partModels.get(selector).getDefaultState(), format, bakedTextureGetter);
+
 			if (model.isPresent()) {
 				builder.putModel(selector.getPredicate(multipart.getStateContainer()), model.get());
 			}

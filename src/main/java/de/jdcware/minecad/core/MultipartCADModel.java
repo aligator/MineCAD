@@ -4,7 +4,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.EnumFacing;
 
 import java.util.Iterator;
 import java.util.List;
@@ -23,20 +22,22 @@ public class MultipartCADModel extends BaseCADModel {
         this.selectors = selectors;
     }
 
-    public List<CADQuad> getQuads(IBlockState state, EnumFacing facing, long rand) {
-        List<CADQuad> allQuads = Lists.newArrayList();
+    @Override
+    public Object buildModel(ICADBuilder builder, IBlockState state, long rand) {
+        List<Object> allModels = Lists.newArrayList();
         if (state != null) {
             Iterator iterSelectors = this.selectors.entrySet().iterator();
 
             while (iterSelectors.hasNext()) {
                 Map.Entry<Predicate<IBlockState>, ICADModel> selectorParts = (Map.Entry) iterSelectors.next();
                 if ((selectorParts.getKey()).apply(state)) {
-                    allQuads.addAll((selectorParts.getValue()).getQuads(state, facing, rand++));
+
+                    allModels.add((selectorParts.getValue()).buildModel(builder, state, rand++));
                 }
             }
         }
 
-        return allQuads;
+        return builder.union(allModels);
     }
 
     public static class Builder {

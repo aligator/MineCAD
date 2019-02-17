@@ -4,10 +4,10 @@ import net.minecraft.client.renderer.block.model.ModelRotation;
 
 abstract public class BaseCADModel implements ICADModel {
 
-    protected final CadRotation rotation;
+    private CADRotation rotation;
 
     public BaseCADModel() {
-        this(null);
+        this(CADRotation.X0_Y0);
     }
 
     public BaseCADModel(ModelRotation rotation) {
@@ -15,11 +15,24 @@ abstract public class BaseCADModel implements ICADModel {
             rotation = ModelRotation.X0_Y0;
         }
 
-        this.rotation = CadRotation.getByModelRotation(rotation);
+        this.rotation = CADRotation.getByModelRotation(rotation);
+    }
+
+    public BaseCADModel(CADRotation rotation) {
+        if (rotation == null) {
+            rotation = CADRotation.X0_Y0;
+        }
+
+        this.rotation = rotation;
     }
 
     @Override
-    public CadRotation getRotation() {
+    public CADRotation getRotation() {
         return rotation;
+    }
+
+    @Override
+    public void setRotation(ModelRotation rotation) {
+        this.rotation = CADRotation.getByModelRotation(rotation);
     }
 }

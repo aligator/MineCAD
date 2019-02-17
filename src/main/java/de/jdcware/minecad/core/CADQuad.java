@@ -1,22 +1,26 @@
 package de.jdcware.minecad.core;
 
 import net.minecraft.client.renderer.block.model.BlockPartRotation;
-
-import java.util.Collections;
-import java.util.List;
+import org.lwjgl.util.vector.Vector3f;
 
 public class CADQuad {
 
-    private final List<CADPoint> points;
+    private final Vector3f from;
+    private final Vector3f to;
     private final BlockPartRotation rotation;
 
-    public CADQuad(List<CADPoint> points, BlockPartRotation rotation) {
-        this.points = Collections.unmodifiableList(points);
+    public CADQuad(Vector3f from, Vector3f to, BlockPartRotation rotation) {
+        this.from = from;
+        this.to = to;
         this.rotation = rotation;
     }
 
-    public List<CADPoint> getPoints() {
-        return points;
+    public Vector3f getFrom() {
+        return from;
+    }
+
+    public Vector3f getTo() {
+        return to;
     }
 
     public BlockPartRotation getRotation() {

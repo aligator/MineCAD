@@ -3,7 +3,7 @@ package de.jdcware.minecad.core;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.util.WeightedRandom;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -33,8 +33,9 @@ public class WeightedRandomCADModel extends BaseCADModel {
         return (WeightedRandom.getRandomItem(this.models, Math.abs((int) rand >> 16) % this.totalWeight)).model;
     }
 
-    public List<CADQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing facing, long rand) {
-        return this.getRandomModel(rand).getQuads(state, facing, rand);
+    @Override
+    public Object buildModel(ICADBuilder builder, @Nullable IBlockState state, long rand) {
+        return this.getRandomModel(rand).buildModel(builder, state, rand);
     }
 
     @SideOnly(Side.CLIENT)
@@ -62,7 +63,8 @@ public class WeightedRandomCADModel extends BaseCADModel {
         public Builder() {
         }
 
-        public Builder add(ICADModel model, int weight) {
+        public Builder add(ICADModel model, int weight, ModelRotation rotation) {
+            model.setRotation(rotation);
             this.listItems.add(new WeightedModel(model, weight));
             return this;
         }
