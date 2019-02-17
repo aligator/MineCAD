@@ -56,7 +56,7 @@ public class ScadCADBuilder extends BaseCADBuilder<Abstract3dModel> {
         // build the cube and rotate, move it to the final position
         Abstract3dModel modelPartCube = new Cube(new Dims3d(xSize, zSize, ySize))
                 .align(new Side(AlignType.MIN_IN, AlignType.MIN_IN, AlignType.MIN_IN), new Coords3d(0, 0, 0))
-                .move(new Coords3d(from.x - 8, from.z - 8, from.y - 8));
+                .move(new Coords3d(from.x - 8 - (blockOverhang / 2), from.z - 8 - (blockOverhang / 2), from.y - 8 - (blockOverhang / 2)));
 
         if (rotation != null) {
             float xRot = 0;
@@ -77,15 +77,15 @@ public class ScadCADBuilder extends BaseCADBuilder<Abstract3dModel> {
 
             // move it so that the origin is in the center of scad.
             modelPartCube = modelPartCube.move(new Coords3d(
-                    -16 * rotation.origin.getX() + 8,
-                    -16 * rotation.origin.getZ() + 8,
-                    -16 * rotation.origin.getY() + 8));
+                    -16 * rotation.origin.getX() + 8 + (blockOverhang / 2),
+                    -16 * rotation.origin.getZ() + 8 + (blockOverhang / 2),
+                    -16 * rotation.origin.getY() + 8 + (blockOverhang / 2)));
 
             // rotate the part and move it back to the correct position
             modelPartCube = new Rotate(modelPartCube, new Angles3d(xRot, zRot, yRot)).move(new Coords3d(
-                    16 * rotation.origin.getX() - 8,
-                    16 * rotation.origin.getZ() - 8,
-                    16 * rotation.origin.getY() - 8));
+                    16 * rotation.origin.getX() - 8 - (blockOverhang / 2),
+                    16 * rotation.origin.getZ() - 8 - (blockOverhang / 2),
+                    16 * rotation.origin.getY() - 8 - (blockOverhang / 2)));
         }
 
 
