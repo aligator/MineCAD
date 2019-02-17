@@ -1,8 +1,8 @@
 package de.jdcware.minecad.scanner;
 
-import de.jdcware.minecad.core.IBaseBlockData;
-import net.minecraft.client.renderer.block.model.ModelBlock;
-import net.minecraft.client.renderer.block.model.ModelRotation;
+
+import de.jdcware.minecad.core.ICADModel;
+import net.minecraft.block.state.IBlockState;
 
 /**
  * A interface for the builder of block models.
@@ -11,8 +11,7 @@ import net.minecraft.client.renderer.block.model.ModelRotation;
  */
 public interface IModelBuilder<T> {
 
-	void add(IBaseBlockData blockData);
-	void add(ModelBlock modelData, ModelRotation modelRotation);
+    void add(ICADModel cadModel, IBlockState state);
 
 	T build();
 }

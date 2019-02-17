@@ -1,24 +1,20 @@
 package de.jdcware.minecad.scanner.scad;
 
-import de.jdcware.minecad.core.IBaseBlockData;
+import com.google.common.collect.Lists;
+import de.jdcware.minecad.core.CADPoint;
+import de.jdcware.minecad.core.CADQuad;
+import de.jdcware.minecad.core.ICADModel;
 import de.jdcware.minecad.scanner.IModelBuilder;
 import eu.printingin3d.javascad.coords.Angles3d;
 import eu.printingin3d.javascad.coords.Coords3d;
-import eu.printingin3d.javascad.coords.Dims3d;
-import eu.printingin3d.javascad.enums.AlignType;
-import eu.printingin3d.javascad.enums.Side;
+import eu.printingin3d.javascad.coords.Triangle3d;
 import eu.printingin3d.javascad.models.Abstract3dModel;
-import eu.printingin3d.javascad.models.Cube;
+import eu.printingin3d.javascad.models.Polyhedron;
 import eu.printingin3d.javascad.tranzitions.Rotate;
 import eu.printingin3d.javascad.tranzitions.Union;
-import net.minecraft.client.renderer.block.model.BlockPart;
-import net.minecraft.client.renderer.block.model.ModelBlock;
-import net.minecraft.client.renderer.block.model.ModelRotation;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import org.lwjgl.util.vector.Vector3f;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,41 +26,108 @@ public class ScadBlockBuilder implements IModelBuilder<Abstract3dModel> {
 	private final float blockOverhang;
 	private final float minSize;
 	private final List<Abstract3dModel> models = new ArrayList<>();
-	private final Field quartersXField;
-	private final Field quartersYField;
+	private final long rand;
 
 	/**
 	 * @param blockOverhang Each block is created bigger by this value. This leads to little overlapping betweend the blocks and as a result prevents non-manifold models, which are very bad for 3d printing.
 	 * @param minSize       Minimal size for a block
 	 */
-	public ScadBlockBuilder(float blockOverhang, float minSize) {
+	public ScadBlockBuilder(float blockOverhang, float minSize, long rand) {
 		this.blockOverhang = blockOverhang;
 		this.minSize = minSize;
-
-		this.quartersXField = ObfuscationReflectionHelper.findField(ModelRotation.class, "field_177543_t"); // quartersX
-		this.quartersYField = ObfuscationReflectionHelper.findField(ModelRotation.class, "field_177542_u"); // quartersY
+		this.rand = rand;
 	}
 
 	/**
 	 * add a ModelBlock to the scad model.
-	 *
-	 * @param blockData a ModelBlock from minecraft
+	 * @param cadModel
 	 */
-	public void add(IBaseBlockData blockData) {
-		add(blockData.getModelBlock(), blockData.getModelRotation());
+	public void add(ICADModel cadModel, IBlockState state) {
+		List<Abstract3dModel> blocks = new ArrayList<>();
+		Angles3d rotation = new Angles3d(cadModel.getRotation().getRotationX(), cadModel.getRotation().getRotationY(), 0);
+
+		for (CADQuad quad : cadModel.getQuads(state, EnumFacing.EAST, rand)) {
+			List<CADPoint> points = quad.getPoints();
+
+			List<Triangle3d> triangles = Lists.newArrayList();
+
+			// bottom
+			triangles.add(createTriangle(points, 0, 1, 2));
+			triangles.add(createTriangle(points, 0, 2, 3));
+
+			// front
+			triangles.add(createTriangle(points, 0, 1, 5));
+			triangles.add(createTriangle(points, 0, 5, 4));
+
+			// top
+			triangles.add(createTriangle(points, 4, 5, 6));
+			triangles.add(createTriangle(points, 4, 6, 7));
+
+			// right
+			triangles.add(createTriangle(points, 1, 2, 6));
+			triangles.add(createTriangle(points, 1, 6, 5));
+
+			// back
+			triangles.add(createTriangle(points, 2, 3, 7));
+			triangles.add(createTriangle(points, 2, 7, 6));
+
+			// left
+			triangles.add(createTriangle(points, 3, 0, 4));
+			triangles.add(createTriangle(points, 3, 4, 7));
+
+			Abstract3dModel modelPartCube = new Polyhedron(triangles);
+
+			if (quad.getRotation() != null) {
+				float xRot = 0;
+				float yRot = 0;
+				float zRot = 0;
+
+				if (quad.getRotation().axis == EnumFacing.Axis.X) {
+					xRot = -quad.getRotation().angle;
+				}
+
+				if (quad.getRotation().axis == EnumFacing.Axis.Y) {
+					yRot = -quad.getRotation().angle;
+				}
+
+				if (quad.getRotation().axis == EnumFacing.Axis.Z) {
+					zRot = -quad.getRotation().angle;
+				}
+
+				// move it so that the origin is in the center of scad.
+				modelPartCube = modelPartCube.move(new Coords3d(
+						-16 * quad.getRotation().origin.getX() + 8,
+						-16 * quad.getRotation().origin.getZ() + 8,
+						-16 * quad.getRotation().origin.getY() + 8));
+
+				// rotate the part and move it back to the correct position
+				modelPartCube = new Rotate(modelPartCube, new Angles3d(xRot, zRot, yRot)).move(new Coords3d(
+						16 * quad.getRotation().origin.getX() - 8,
+						16 * quad.getRotation().origin.getZ() - 8,
+						16 * quad.getRotation().origin.getY() - 8));
+			}
+
+
+			blocks.add(modelPartCube);
+		}
+
+		models.add(new Union(blocks).rotate(rotation));
 	}
 
-	/**
-	 * add a ModelBlock to the scad model.
-	 * @param modelData a ModelBlock from minecraft
-	 * @param modelRotation rotation from the block
-	 */
-	@Override
-	public void add(ModelBlock modelData, ModelRotation modelRotation) {
-		Angles3d rotation = new Angles3d(getModelRotationX(modelRotation) * 90, 0, getModelRotationY(modelRotation) * 90);
+	private Triangle3d createTriangle(List<CADPoint> points, int index0, int index1, int index2) {
+		Triangle3d triangle = new Triangle3d(
+				new Coords3d(points.get(index0).x, points.get(index0).y, points.get(index0).z),
+				new Coords3d(points.get(index1).x, points.get(index1).y, points.get(index1).z),
+				new Coords3d(points.get(index2).x, points.get(index2).y, points.get(index2).z)
+		);
+
+		return triangle;
+	}
+/*
+		Angles3d rotation = new Angles3d(modelData.getModelRotation().getRotationX(), 0, modelData.getModelRotation().getRotationY());
 		List<Abstract3dModel> blocks = new ArrayList<>();
 
-		for (BlockPart blockPart : modelData.getElements()) {
+		for (BlockPart blockPart : modelData.getBlockParts()) {
 			Vector3f from = blockPart.positionFrom;
 			Vector3f to = blockPart.positionTo;
 
@@ -128,42 +191,12 @@ public class ScadBlockBuilder implements IModelBuilder<Abstract3dModel> {
 		}
 
 		// combine all blocks and rotate the whole block to the final position.
-		models.add(new Union(blocks).rotate(rotation));
-	}
+		models.add(new Union(blocks).rotate(rotation));*/
+	//}
 
 	@Override
 	// return all models as one Union
 	public Abstract3dModel build() {
 		return new Union(models);
-	}
-
-	/**
-	 * get reflective access to the rotation data of ModelRotation
-	 *
-	 * @param rotation
-	 * @return quartersX
-	 */
-	private int getModelRotationX(ModelRotation rotation) {
-		try {
-			return (int) quartersXField.get(rotation);
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		return 0;
-	}
-
-	/**
-	 * get reflective access to the rotation data of ModelRotation
-	 *
-	 * @param rotation
-	 * @return quartersY
-	 */
-	private int getModelRotationY(ModelRotation rotation) {
-		try {
-			return (int) quartersYField.get(rotation);
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		return 0;
 	}
 }

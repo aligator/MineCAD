@@ -1,8 +1,8 @@
 package de.jdcware.minecad.scanner.scad;
 
-import de.jdcware.minecad.MineCAD;
 import de.jdcware.minecad.MineCADConfig;
-import de.jdcware.minecad.scanner.IBlockData;
+import de.jdcware.minecad.core.ICADModel;
+import de.jdcware.minecad.core.asm.MineCADCorePlugin;
 import eu.printingin3d.javascad.coords.Coords3d;
 import eu.printingin3d.javascad.models.Abstract3dModel;
 import eu.printingin3d.javascad.tranzitions.Mirror;
@@ -67,10 +67,23 @@ public class Scanner3D {
 
 					// filter ignored blocks and air
 					if (!currentBlock.isAir(blockState, world, current) && !MineCADConfig.isIgnoredBlock(blockState.getBlock().getRegistryName())) {
-						IBlockData mcBlockModelData = null;
+						ICADModel cadModel = null;
 
 						BlockModelShapes modelShapes = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes();
 						BlockStateMapper blockstatemapper = modelShapes.getBlockStateMapper();
+
+						for (final ResourceLocation resourcelocation : blockstatemapper.getBlockstateLocations(blockState.getBlock())) {
+
+							cadModel = MineCADCorePlugin.getModelRegistry().getObject(new ModelResourceLocation(resourcelocation, modelShapes.getBlockStateMapper().getVariants(blockState.getBlock()).get(blockState).getVariant()));
+							break;
+						}
+
+
+						ScadBlockBuilder builder = new ScadBlockBuilder(0, 0, 5);
+						builder.add(cadModel, blockState);
+
+						Abstract3dModel model = builder.build();
+						/*
 
 						// TODO: find a way to know which resource location should be used. (example: sapplings)
 						//       it now uses just the first one
@@ -85,7 +98,7 @@ public class Scanner3D {
 							MineCAD.LOGGER.info("block " + currentBlock.getRegistryName() + " has no 3d-data in resources.");
 						}
 
-						Abstract3dModel model = (Abstract3dModel) mcBlockModelData.getBlockModelData(blockState);
+						Abstract3dModel model = (Abstract3dModel) mcBlockModelData.getBlockModelData(blockState);*/
 						// add the model and move it to the correct position
 						models.add(model.move(new Coords3d(i * 16, k * 16, j * 16)));
 					}
