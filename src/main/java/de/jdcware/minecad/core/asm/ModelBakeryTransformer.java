@@ -92,65 +92,6 @@ public class ModelBakeryTransformer implements IClassTransformer {
 		return bytes;
 	}
 
-	public byte[] transformOnBakeMultipart(String name, String transformedName, byte[] bytes) {
-		if (name.equals("net.minecraftforge.client.model.ModelLoader$MultipartModel")) {
-			ClassNode classNode = new ClassNode();
-			ClassReader classReader = new ClassReader(bytes);
-			classReader.accept(classNode, 0);
-
-			// find method to inject into
-			Iterator<MethodNode> methods = classNode.methods.iterator();
-			while (methods.hasNext()) {
-				MethodNode method = methods.next();
-
-				if (method.name.equals("bake") && method.desc.equals("(Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function;)Lnet/minecraft/client/renderer/block/model/IBakedModel;")
-						|| method.name.equals("bake") && method.desc.equals(obfMapping.get("(Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function;)Lnet/minecraft/client/renderer/block/model/IBakedModel;"))) {
-
-					for (int i = 0; i < method.instructions.size(); i++) {
-						if (method.instructions.get(i).getType() == AbstractInsnNode.METHOD_INSN) {
-							MethodInsnNode currentNode = (MethodInsnNode) method.instructions.get(i);
-							// inject code at the beginning of the method
-
-							// make new instruction list
-							InsnList toInject = new InsnList();
-
-							// construct instruction nodes for list
-							toInject.add(new LabelNode(new Label()));
-							toInject.add(new VarInsnNode(ALOAD, 0)); // this
-							toInject.add(new VarInsnNode(ALOAD, 1)); // state param
-							// TODO: dfffdfdf
-							toInject.add(new VarInsnNode(ALOAD, 0));
-							toInject.add(new FieldInsnNode(GETFIELD, "net/minecraftforge/client/model/ModelLoader$MultipartModel", "variants", "Ljava/util/List;"));
-
-							toInject.add(new VarInsnNode(ALOAD, 0));
-							toInject.add(new FieldInsnNode(GETFIELD, "net/minecraftforge/client/model/ModelLoader$WeightedRandomModel", "locations", "Ljava/util/List;"));
-
-							toInject.add(new VarInsnNode(ALOAD, 0));
-							toInject.add(new FieldInsnNode(GETFIELD, "net/minecraftforge/client/model/ModelLoader$WeightedRandomModel", "textures", "Ljava/util/Set;"));
-
-							toInject.add(new VarInsnNode(ALOAD, 0));
-							toInject.add(new FieldInsnNode(GETFIELD, "net/minecraftforge/client/model/ModelLoader$WeightedRandomModel", "models", "Ljava/util/List;"));
-
-							toInject.add(new VarInsnNode(ALOAD, 0));
-							toInject.add(new FieldInsnNode(GETFIELD, "net/minecraftforge/client/model/ModelLoader$WeightedRandomModel", "defaultState", "Lnet/minecraftforge/common/model/IModelState;"));
-
-							toInject.add(new MethodInsnNode(INVOKESTATIC, "de/jdcware/minecad/core/asm/MineCADCorePlugin", "onWeightedRandomBlockBake",
-									"(Lnet/minecraftforge/client/model/IModel;Lnet/minecraftforge/common/model/IModelState;Ljava/util/List;Ljava/util/List;Ljava/util/Set;Ljava/util/List;Lnet/minecraftforge/common/model/IModelState;)V", false));
-
-							method.instructions.insertBefore(method.instructions.get(i + 1), toInject);
-							break;
-						}
-					}
-				}
-			}
-
-			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-			classNode.accept(writer);
-			return writer.toByteArray();
-		}
-		return bytes;
-	}
-
 	private byte[] transformExtendIModel(String name, String transformedName, byte[] bytes) {
 		if (name.equals("net.minecraftforge.client.model.IModel")) {
 			ClassNode classNode = new ClassNode();
