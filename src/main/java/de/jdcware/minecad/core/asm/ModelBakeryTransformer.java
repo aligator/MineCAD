@@ -6,6 +6,7 @@ import jdk.internal.org.objectweb.asm.Label;
 import jdk.internal.org.objectweb.asm.Opcodes;
 import jdk.internal.org.objectweb.asm.tree.*;
 import net.minecraft.launchwrapper.IClassTransformer;
+import net.minecraft.launchwrapper.Launch;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,14 +16,25 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class ModelBakeryTransformer implements IClassTransformer {
 
+    final boolean developerEnvironment = (boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
+
 	public static final Map<String, String> obfMapping = new HashMap<>();
 
 	public ModelBakeryTransformer() {
 		obfMapping.put("setupModelRegistry", "a");
 		obfMapping.put("()Lnet/minecraft/util/registry/IRegistry;", "()Lfm;");
 		obfMapping.put("loadVariantItemModels", "c");
-		obfMapping.put("(Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function;)Lnet/minecraft/client/renderer/block/model/IBakedModel;", "(Lnet/minecraftforge/common/model/IModelState;Lcea;Ljava/util/function/Function;)Lcfy;");
-	}
+        obfMapping.put("Lnet/minecraft/client/renderer/vertex/VertexFormat;", "Lcea;");
+        obfMapping.put("ITEM", "field_176599_b");
+    }
+
+    private String getMapping(String key) {
+        if (developerEnvironment) {
+            return key;
+        }
+
+        return obfMapping.containsKey(key) ? obfMapping.get(key) : key;
+    }
 
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] bytes) {
@@ -50,14 +62,13 @@ public class ModelBakeryTransformer implements IClassTransformer {
 			Iterator<MethodNode> methods = classNode.methods.iterator();
 			while (methods.hasNext()) {
 				MethodNode method = methods.next();
-				if (method.name.equals("setupModelRegistry") && method.desc.equals("()Lnet/minecraft/util/registry/IRegistry;")
-						|| method.name.equals(obfMapping.get("setupModelRegistry")) && method.desc.equals(obfMapping.get("()Lnet/minecraft/util/registry/IRegistry;"))) {
+                if (method.name.equals(getMapping("setupModelRegistry")) && method.desc.equals(getMapping("()Lnet/minecraft/util/registry/IRegistry;"))) {
 
 					// find loadVariantItemModels() call to inject code after it
 					for (int i = 0; i < method.instructions.size(); i++) {
 						if (method.instructions.get(i).getType() == AbstractInsnNode.METHOD_INSN) {
 							MethodInsnNode loadVariantItemModelsNode = (MethodInsnNode) method.instructions.get(i);
-							if (loadVariantItemModelsNode.name.equals("loadVariantItemModels") || loadVariantItemModelsNode.name.equals(obfMapping.get("loadVariantItemModels"))) {
+                            if (loadVariantItemModelsNode.name.equals(getMapping("loadVariantItemModels"))) {
 
 								// make a new label node for the end of our code
 								LabelNode lmm1Node = new LabelNode(new Label());
@@ -103,8 +114,8 @@ public class ModelBakeryTransformer implements IClassTransformer {
 					327680,
 					Opcodes.ACC_PUBLIC,
 					"getModel",
-					"(Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function;)Ljava/util/Optional;",
-                    "(Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function<Lnet/minecraft/util/ResourceLocation;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;>;)Ljava/util/Optional<Lde/jdcware/minecad/core/ICADModel;>;",
+                    "(Lnet/minecraftforge/common/model/IModelState;" + getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;") + "Ljava/util/function/Function;)Ljava/util/Optional;",
+                    "(Lnet/minecraftforge/common/model/IModelState;" + getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;") + "Ljava/util/function/Function<Lnet/minecraft/util/ResourceLocation;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;>;)Ljava/util/Optional<Lde/jdcware/minecad/core/ICADModel;>;",
 					null
 			);
 
@@ -117,13 +128,13 @@ public class ModelBakeryTransformer implements IClassTransformer {
             MethodGetModel.instructions.add(new VarInsnNode(ALOAD, 2));
             MethodGetModel.instructions.add(new VarInsnNode(ALOAD, 3));
             MethodGetModel.instructions.add(new MethodInsnNode(INVOKESTATIC, "de/jdcware/minecad/core/asm/MineCADCorePlugin", "defaultGetModel",
-                    "(Lnet/minecraftforge/client/model/IModel;Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function;)Ljava/util/Optional;", false));
+                    "(Lnet/minecraftforge/client/model/IModel;Lnet/minecraftforge/common/model/IModelState;" + getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;") + "Ljava/util/function/Function;)Ljava/util/Optional;", false));
 			MethodGetModel.instructions.add(new InsnNode(ARETURN));
 			MethodGetModel.instructions.add(labelEnd);
 
 			MethodGetModel.localVariables.add(new LocalVariableNode("this", "Lnet/minecraftforge/client/model/IModel;", null, labelBegin, labelEnd, 0));
 			MethodGetModel.localVariables.add(new LocalVariableNode("state", "Lnet/minecraftforge/common/model/IModelState;", null, labelBegin, labelEnd, 1));
-			MethodGetModel.localVariables.add(new LocalVariableNode("format", "Lnet/minecraft/client/renderer/vertex/VertexFormat;", null, labelBegin, labelEnd, 2));
+            MethodGetModel.localVariables.add(new LocalVariableNode("format", getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;"), null, labelBegin, labelEnd, 2));
 			MethodGetModel.localVariables.add(new LocalVariableNode("bakedTextureGetter", "Ljava/util/function/Function;", null, labelBegin, labelEnd, 3));
 
 			classNode.methods.add(MethodGetModel);
@@ -145,8 +156,7 @@ public class ModelBakeryTransformer implements IClassTransformer {
             Iterator<MethodNode> methods = classNode.methods.iterator();
             while (methods.hasNext()) {
                 MethodNode method = methods.next();
-                if (method.name.equals("setupModelRegistry") && method.desc.equals("()Lnet/minecraft/util/registry/IRegistry;")
-                        || method.name.equals(obfMapping.get("setupModelRegistry")) && method.desc.equals(obfMapping.get("()Lnet/minecraft/util/registry/IRegistry;"))) {
+                if (method.name.equals(getMapping("setupModelRegistry")) && method.desc.equals(getMapping("()Lnet/minecraft/util/registry/IRegistry;"))) {
 
                     // find loadVariantItemModels() call to inject code after it
                     for (int i = 0; i < method.instructions.size(); i++) {
@@ -167,11 +177,12 @@ public class ModelBakeryTransformer implements IClassTransformer {
 
                                     toInject.add(new MethodInsnNode(INVOKEINTERFACE, "net/minecraftforge/client/model/IModel", "getDefaultState",
                                             "()Lnet/minecraftforge/common/model/IModelState;", true));
-                                    toInject.add(new FieldInsnNode(GETSTATIC, "net/minecraft/client/renderer/vertex/DefaultVertexFormats", "ITEM", "Lnet/minecraft/client/renderer/vertex/VertexFormat;"));
+
+                                    toInject.add(new FieldInsnNode(GETSTATIC, "net/minecraft/client/renderer/vertex/DefaultVertexFormats", getMapping("ITEM"), getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;")));
                                     toInject.add(new FieldInsnNode(GETSTATIC, "net/minecraftforge/client/model/ModelLoader$DefaultTextureGetter", "INSTANCE", "Lnet/minecraftforge/client/model/ModelLoader$DefaultTextureGetter;"));
 
                                     toInject.add(new MethodInsnNode(INVOKESTATIC, "de/jdcware/minecad/core/asm/MineCADCorePlugin", "onBlockBake",
-                                            "(Lnet/minecraftforge/client/model/IModel;Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function;)V", false));
+                                            "(Lnet/minecraftforge/client/model/IModel;Lnet/minecraftforge/common/model/IModelState;" + getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;") + "Ljava/util/function/Function;)V", false));
 
                                     method.instructions.insert(insertLocationNode, toInject);
                                 }
@@ -209,8 +220,8 @@ public class ModelBakeryTransformer implements IClassTransformer {
                     327680,
                     Opcodes.ACC_PUBLIC,
                     "getModel",
-                    "(Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function;)Ljava/util/Optional;",
-                    "(Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function<Lnet/minecraft/util/ResourceLocation;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;>;)Ljava/util/Optional<Lde/jdcware/minecad/core/ICADModel;>;",
+                    "(Lnet/minecraftforge/common/model/IModelState;" + getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;") + "Ljava/util/function/Function;)Ljava/util/Optional;",
+                    "(Lnet/minecraftforge/common/model/IModelState;" + getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;") + "Ljava/util/function/Function<Lnet/minecraft/util/ResourceLocation;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;>;)Ljava/util/Optional<Lde/jdcware/minecad/core/ICADModel;>;",
                     null
             );
 
@@ -239,14 +250,14 @@ public class ModelBakeryTransformer implements IClassTransformer {
 
 
             MethodGetModel.instructions.add(new MethodInsnNode(INVOKESTATIC, "de/jdcware/minecad/core/asm/MineCADCorePlugin", "onWeightedRandomBlock",
-                    "(Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function;Ljava/util/List;Ljava/util/List;Ljava/util/Set;Ljava/util/List;Lnet/minecraftforge/common/model/IModelState;)Ljava/util/Optional;", false));
+                    "(Lnet/minecraftforge/common/model/IModelState;" + getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;") + "Ljava/util/function/Function;Ljava/util/List;Ljava/util/List;Ljava/util/Set;Ljava/util/List;Lnet/minecraftforge/common/model/IModelState;)Ljava/util/Optional;", false));
             MethodGetModel.instructions.add(new InsnNode(ARETURN));
 
             MethodGetModel.instructions.add(labelEnd);
 
             MethodGetModel.localVariables.add(new LocalVariableNode("this", "Lnet/minecraftforge/client/model/ModelLoader$WeightedRandomModel;", null, labelBegin, labelEnd, 0));
             MethodGetModel.localVariables.add(new LocalVariableNode("state", "Lnet/minecraftforge/common/model/IModelState;", null, labelBegin, labelEnd, 1));
-            MethodGetModel.localVariables.add(new LocalVariableNode("format", "Lnet/minecraft/client/renderer/vertex/VertexFormat;", null, labelBegin, labelEnd, 2));
+            MethodGetModel.localVariables.add(new LocalVariableNode("format", getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;"), null, labelBegin, labelEnd, 2));
             MethodGetModel.localVariables.add(new LocalVariableNode("bakedTextureGetter", "Ljava/util/function/Function;", null, labelBegin, labelEnd, 3));
 
             classNode.methods.add(MethodGetModel);
@@ -279,8 +290,8 @@ public class ModelBakeryTransformer implements IClassTransformer {
                     327680,
                     Opcodes.ACC_PUBLIC,
                     "getModel",
-                    "(Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function;)Ljava/util/Optional;",
-                    "(Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function<Lnet/minecraft/util/ResourceLocation;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;>;)Ljava/util/Optional<Lde/jdcware/minecad/core/ICADModel;>;",
+                    "(Lnet/minecraftforge/common/model/IModelState;" + getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;") + "Ljava/util/function/Function;)Ljava/util/Optional;",
+                    "(Lnet/minecraftforge/common/model/IModelState;" + getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;") + "Ljava/util/function/Function<Lnet/minecraft/util/ResourceLocation;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;>;)Ljava/util/Optional<Lde/jdcware/minecad/core/ICADModel;>;",
                     null
             );
 
@@ -302,14 +313,14 @@ public class ModelBakeryTransformer implements IClassTransformer {
             MethodGetModel.instructions.add(new FieldInsnNode(GETFIELD, "net/minecraftforge/client/model/ModelLoader$MultipartModel", "partModels", "Lcom/google/common/collect/ImmutableMap;"));
 
             MethodGetModel.instructions.add(new MethodInsnNode(INVOKESTATIC, "de/jdcware/minecad/core/asm/MineCADCorePlugin", "onMultipartBlock",
-                    "(Lnet/minecraftforge/common/model/IModelState;Lnet/minecraft/client/renderer/vertex/VertexFormat;Ljava/util/function/Function;Lnet/minecraft/util/ResourceLocation;Lnet/minecraft/client/renderer/block/model/multipart/Multipart;Lcom/google/common/collect/ImmutableMap;)Ljava/util/Optional;", false));
+                    "(Lnet/minecraftforge/common/model/IModelState;" + getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;") + "Ljava/util/function/Function;Lnet/minecraft/util/ResourceLocation;Lnet/minecraft/client/renderer/block/model/multipart/Multipart;Lcom/google/common/collect/ImmutableMap;)Ljava/util/Optional;", false));
             MethodGetModel.instructions.add(new InsnNode(ARETURN));
 
             MethodGetModel.instructions.add(labelEnd);
 
             MethodGetModel.localVariables.add(new LocalVariableNode("this", "Lnet/minecraftforge/client/model/ModelLoader$MultipartModel;", null, labelBegin, labelEnd, 0));
             MethodGetModel.localVariables.add(new LocalVariableNode("state", "Lnet/minecraftforge/common/model/IModelState;", null, labelBegin, labelEnd, 1));
-            MethodGetModel.localVariables.add(new LocalVariableNode("format", "Lnet/minecraft/client/renderer/vertex/VertexFormat;", null, labelBegin, labelEnd, 2));
+            MethodGetModel.localVariables.add(new LocalVariableNode("format", getMapping("Lnet/minecraft/client/renderer/vertex/VertexFormat;"), null, labelBegin, labelEnd, 2));
             MethodGetModel.localVariables.add(new LocalVariableNode("bakedTextureGetter", "Ljava/util/function/Function;", null, labelBegin, labelEnd, 3));
 
             classNode.methods.add(MethodGetModel);

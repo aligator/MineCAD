@@ -17,7 +17,6 @@ import net.minecraftforge.client.model.Attributes;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.MultiModelState;
 import net.minecraftforge.common.model.IModelState;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,11 +65,11 @@ public class MineCADCorePlugin implements IFMLLoadingPlugin {
 	 * @param multipartModels
 	 */
 	public static void onBlocksLoaded(Map<ModelResourceLocation, IModel> stateModels, Map<ModelResourceLocation, ModelBlockDefinition> multipartDefinitions, Map<ModelBlockDefinition, IModel> multipartModels) {
-		de.jdcware.minecad.core.asm.MineCADCorePlugin.stateModels = stateModels;
+        MineCADCorePlugin.stateModels = stateModels;
 
 		// The other params are not needed for this mod, but maybe interesting for others...
-		de.jdcware.minecad.core.asm.MineCADCorePlugin.multipartDefinitions = multipartDefinitions;
-		de.jdcware.minecad.core.asm.MineCADCorePlugin.multipartModels = multipartModels;
+        MineCADCorePlugin.multipartDefinitions = multipartDefinitions;
+        MineCADCorePlugin.multipartModels = multipartModels;
 	}
 
 	public static void onBlockBake(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
@@ -129,15 +128,17 @@ public class MineCADCorePlugin implements IFMLLoadingPlugin {
 	public static Optional<ICADModel> callGetModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
 		try {
 			if (getModelField == null) {
-				getModelField = ObfuscationReflectionHelper.findMethod(IModel.class, "getModel", void.class, IModelState.class, VertexFormat.class, Function.class);
+                getModelField = IModel.class.getMethod("getModel", IModelState.class, VertexFormat.class, Function.class);
 			}
 
 			return (Optional<ICADModel>) getModelField.invoke(model, state, format, bakedTextureGetter);
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		}
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
 
 		return Optional.empty();
 	}
